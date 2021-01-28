@@ -11,7 +11,7 @@ sudo yum install -y tmux
 git clone https://github.com/tcler/kiss-vm-ns && sudo make -C kiss-vm-ns && sudo vm --prepare"
 ```
 
-# quich start
+# quick start
 ```
 git clone https://github.com/tcler/freebsd-pnfsserver-in-kvm
 cd freebsd-pnfsserver-in-kvm
