@@ -2,6 +2,7 @@
 
 ds_server0=$1
 ds_server1=$2
+expdir=${3:-/export}
 
 if [ -z "$ds_server0" ] || [ -z "$ds_server1" ]; then
 	echo "Usage: $0 <ds0> <ds2>"
@@ -11,7 +12,6 @@ fi
 mntds0=/data0
 mntds1=/data1
 
-expdir=/export
 expdir0=/export0
 expdir1=/export1
 
@@ -52,6 +52,3 @@ sysctl vfs.nfsd.default_flexfile=1
 egrep -i ^nfs_client_enable=.?YES /etc/rc.conf ||
 echo 'nfs_client_enable="YES"' >>/etc/rc.conf
 service nfsclient start
-
-#this is needed by freebsd pnfs client
-# nfscbd_enable="YES" #in /etc/rc.conf

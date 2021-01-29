@@ -21,6 +21,11 @@ trap Cleanup EXIT #SIGINT SIGQUIT SIGTERM
 #create freebsd VMs
 #-------------------------------------------------------------------------------
 freebsd_nvr="FreeBSD-12.2"
+vm_ds1=freebsd-pnfs-ds1
+vm_ds2=freebsd-pnfs-ds2
+vm_mds=freebsd-pnfs-mds
+vm_client=freebsd-pnfs-client
+
 stdlogf=/tmp/std-$$.log
 vm --downloadonly $freebsd_nvr 2>&1 | tee $stdlogf
 imagef=$(sed -n '${s/^.* //; p}' $stdlogf)
@@ -43,15 +48,15 @@ echo "{INFO} remove existed VMs ..." >&2
 vm del freebsd-pnfs-ds1 freebsd-pnfs-ds2 freebsd-pnfs-mds freebsd-pnfs-client
 
 echo "{INFO} creating VMs ..." >&2
-tmux new -d "/usr/bin/vm $freebsd_nvr -n freebsd-pnfs-ds1 -i $imagef -f"
-tmux new -d "/usr/bin/vm $freebsd_nvr -n freebsd-pnfs-ds2 -i $imagef -f"
-tmux new -d "/usr/bin/vm $freebsd_nvr -n freebsd-pnfs-mds -i $imagef -f"
-#tmux new -d "/usr/bin/vm $freebsd_nvr -n freebsd-pnfs-client -i $imagef -f"
+tmux new -d "/usr/bin/vm $freebsd_nvr -n $vm_ds1 -i $imagef -f"
+tmux new -d "/usr/bin/vm $freebsd_nvr -n $vm_ds2 -i $imagef -f"
+tmux new -d "/usr/bin/vm $freebsd_nvr -n $vm_mds -i $imagef -f"
+tmux new -d "/usr/bin/vm $freebsd_nvr -n $vm_client -i $imagef -f"
 
 port_available() { nc $1 $2 </dev/null &>/dev/null; }
 
 #config freebsd pnfs ds server
-for dsserver in freebsd-pnfs-ds1 freebsd-pnfs-ds2; do
+for dsserver in $vm_ds1 $vm_ds2; do
 	until port_available ${dsserver} 22; do sleep 2; done
 	vm cpto ${dsserver} pnfs-ds.sh .
 	vm exec -v ${dsserver} sh pnfs-ds.sh
@@ -59,13 +64,29 @@ for dsserver in freebsd-pnfs-ds1 freebsd-pnfs-ds2; do
 done
 
 #config freebsd pnfs mds server
-mdsserver=freebsd-pnfs-mds
-ds1addr=$(vm if freebsd-pnfs-ds1)
-ds2addr=$(vm if freebsd-pnfs-ds2)
-until port_available ${mdsserver} 22; do sleep 2; done
-vm cpto ${mdsserver} pnfs-mds.sh .
-vm exec -v ${mdsserver} sh pnfs-mds.sh $ds1addr $ds2addr
-vm exec -v ${mdsserver} -- mount -t nfs
-vm exec -v ${mdsserver} -- showmount -e localhost
+ds1addr=$(vm if $vm_ds1)
+ds2addr=$(vm if $vm_ds2)
+expdir=/export
+until port_available ${vm_mds} 22; do sleep 2; done
+vm cpto ${vm_mds} pnfs-mds.sh .
+vm exec -v ${vm_mds} sh pnfs-mds.sh $ds1addr $ds2addr $expdir
+vm exec -v ${vm_mds} -- mount -t nfs
+vm exec -v ${vm_mds} -- showmount -e localhost
 
 #config freebsd pnfs client
+until port_available ${vm_client} 22; do sleep 2; done
+vm cpto ${vm_client} pnfs-client.sh .
+vm exec -v ${vm_client} sh pnfs-client.sh
+
+#mount test
+nfsmp=/mnt/nfsmp
+mdsaddr=$(vm if $vm_mds)
+vm exec -v ${vm_client} -- mkdir -p $nfsmp
+vm exec -v ${vm_client} -- mount -t nfs -o nfsv4,minorversion=1,pnfs $mdsaddr:/ $nfsmp
+vm exec -v ${vm_client} -- mount -t nfs
+vm exec -v ${vm_client} -- sh -c "'echo 0123456789abcdef >$nfsmp/testfile'"
+
+vm exec -v ${vm_mds} -- ls -l $expdir/testfile
+vm exec -v ${vm_mds} -- cat $expdir/testfile
+vm exec -v ${vm_mds} -- pnfsdsfile $expdir/testfile
+
