@@ -4,12 +4,16 @@
 #-------------------------------------------------------------------------------
 if ! which vm; then
 	KissVMUrl=https://github.com/tcler/kiss-vm-ns
-	cat <<-EOF >&2
-	{WARN} please install kiss-vm at first by run:
-	 sudo bash -c "git clone --depth=1 "$KissVMUrl" && make -C kiss-vm-ns && vm --prepare"
-	EOF
 
-	exit 1
+	if [[ $(id -u) = 0 ]]; then
+		git clone --depth=1 $KissVMUrl && make -C kiss-vm-ns && vm --prepare
+	else
+		cat <<-EOF >&2
+		{WARN} please install kiss-vm at first by run:
+		 sudo bash -c "git clone --depth=1 $KissVMUrl && make -C kiss-vm-ns && vm --prepare"
+		EOF
+		exit 1
+	fi
 fi
 
 Cleanup() {
