@@ -41,12 +41,17 @@ nfs_server_enable="YES"
 nfsv4_server_enable="YES"
 nfsuserd_enable="YES"
 
-nfs_server_flags="-u -t -n 128 -p $ds_server0:$mntds0,$ds_server1:$mntds1"
+nfs_server_flags="-u -t -n 32 -m 2 -p $ds_server0:$mntds0,$ds_server1:$mntds1"
 mountd_flags="-S"
+nfsuserd_flags="-manage-gids"
 EOF
 service nfsd start
-service mountd reload
+service mountd restart
+service nfsuserd start
 sysctl vfs.nfsd.default_flexfile=1
+
+sysctl vfs.nfsd.enable_stringtouid=1
+sysctl vfs.nfs.enable_uidtostring=1
 
 #enable nfs client
 egrep -i ^nfs_client_enable=.?YES /etc/rc.conf ||

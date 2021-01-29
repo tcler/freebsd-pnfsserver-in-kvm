@@ -85,6 +85,8 @@ vm exec -v ${vm_client} -- mkdir -p $nfsmp
 vm exec -v ${vm_client} -- mount -t nfs -o nfsv4,minorversion=1,pnfs $mdsaddr:/ $nfsmp
 vm exec -v ${vm_client} -- mount -t nfs
 vm exec -v ${vm_client} -- sh -c "'echo 0123456789abcdef >$nfsmp/testfile'"
+vm exec -v ${vm_client} -- ls -l $nfsmp/testfile
+vm exec -v ${vm_client} -- cat $nfsmp/testfile
 
 vm exec -v ${vm_mds} -- ls -l $expdir/testfile
 vm exec -v ${vm_mds} -- cat $expdir/testfile
