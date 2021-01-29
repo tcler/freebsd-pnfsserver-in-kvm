@@ -50,9 +50,6 @@ service mountd restart
 service nfsuserd start
 sysctl vfs.nfsd.default_flexfile=1
 
-sysctl vfs.nfsd.enable_stringtouid=1
-sysctl vfs.nfs.enable_uidtostring=1
-
 #enable nfs client
 egrep -i ^nfs_client_enable=.?YES /etc/rc.conf ||
 echo 'nfs_client_enable="YES"' >>/etc/rc.conf
