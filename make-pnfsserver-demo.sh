@@ -36,7 +36,6 @@ fi
 if [[ $imagef = *.xz ]]; then
 	echo "{INFO} decompress $imagef ..."
 	xz -d $imagef
-	rm -f $imagef
 	imagef=${imagef%.xz}
 	if [[ ! -f ${imagef} ]]; then
 		echo "{WARN} there is no $imagef, something was wrong." >&2
