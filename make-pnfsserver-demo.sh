@@ -78,7 +78,7 @@ until port_available ${vm_client} 22; do sleep 2; done
 vm cpto ${vm_client} pnfs-client.sh .
 vm exec -v ${vm_client} sh pnfs-client.sh
 
-#mount test
+#mount test from freebsd client
 nfsmp=/mnt/nfsmp
 mdsaddr=$(vm if $vm_mds)
 vm exec -v ${vm_client} -- mkdir -p $nfsmp
@@ -92,3 +92,20 @@ vm exec -v ${vm_mds} -- ls -l $expdir/testfile
 vm exec -v ${vm_mds} -- cat $expdir/testfile
 vm exec -v ${vm_mds} -- pnfsdsfile $expdir/testfile
 
+#mount test from linux host
+if [[ $(id -u) = 0 ]]; then
+	mkdir -p $nfsmp
+	mount -t nfs -o nfsvers=4.1 freebsd-pnfs-mds:/ $nfsmp
+	echo "hello pnfs" >$nfsmp/hello-pnfs.txt
+	ls -l $nfsmp/hello-pnfs.txt
+	cat $nfsmp/hello-pnfs.txt
+else
+	cat <<-EOF
+		# you can do test from linux like:
+		sudo mkdir -p $nfsmp
+		sudo mount -t nfs -o nfsvers=4.1 $mdsaddr:/ $nfsmp
+		sudo tee $nfsmp/hello-pnfs.txt <<<"hello pnfs"
+		ls -l $nfsmp/hello-pnfs.txt
+		cat $nfsmp/hello-pnfs.txt
+	EOF
+fi
