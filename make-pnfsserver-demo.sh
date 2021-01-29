@@ -100,11 +100,14 @@ if [[ $(id -u) = 0 ]]; then
 	cat $nfsmp/hello-pnfs.txt
 else
 	cat <<-EOF
+
+		#---------------------------------------------------------------
 		# you can do test from linux like:
 		sudo mkdir -p $nfsmp
 		sudo mount -t nfs -o nfsvers=4.1 $mdsaddr:/ $nfsmp
 		sudo tee $nfsmp/hello-pnfs.txt <<<"hello pnfs"
 		ls -l $nfsmp/hello-pnfs.txt
 		cat $nfsmp/hello-pnfs.txt
+		#---------------------------------------------------------------
 	EOF
 fi
