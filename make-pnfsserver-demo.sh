@@ -22,6 +22,12 @@ Cleanup() {
 }
 trap Cleanup EXIT #SIGINT SIGQUIT SIGTERM
 
+run() {
+	[[ $# -eq 0 ]] && return 0
+	echo "[run]" "$@"
+	"$@"
+}
+
 #create freebsd VMs
 #-------------------------------------------------------------------------------
 freebsd_nvr="FreeBSD-12.2"
@@ -97,21 +103,27 @@ vm exec -v ${vm_mds} -- pnfsdsfile $expdir/testfile
 
 #mount test from linux host
 if [[ $(id -u) = 0 ]]; then
-	mkdir -p $nfsmp
-	mount -t nfs -o nfsvers=4.1 freebsd-pnfs-mds:/ $nfsmp
-	echo "hello pnfs" >$nfsmp/hello-pnfs.txt
-	ls -l $nfsmp/hello-pnfs.txt
-	cat $nfsmp/hello-pnfs.txt
+	cat <<-EOF
+
+	# test from linux host:
+	EOF
+	run mkdir -p $nfsmp
+	run mount -t nfs -o nfsvers=4.1 freebsd-pnfs-mds:/ $nfsmp
+	run mount -t nfs4
+	run bash -c "echo 'hello pnfs' >$nfsmp/hello-pnfs.txt"
+	run ls -l $nfsmp/hello-pnfs.txt
+	run cat $nfsmp/hello-pnfs.txt
 else
 	cat <<-EOF
 
-		#---------------------------------------------------------------
-		# you can do test from linux like:
-		sudo mkdir -p $nfsmp
-		sudo mount -t nfs -o nfsvers=4.1 $mdsaddr:/ $nfsmp
-		sudo tee $nfsmp/hello-pnfs.txt <<<"hello pnfs"
-		ls -l $nfsmp/hello-pnfs.txt
-		cat $nfsmp/hello-pnfs.txt
-		#---------------------------------------------------------------
+	#---------------------------------------------------------------
+	# you can do test from linux like:
+	sudo mkdir -p $nfsmp
+	sudo mount -t nfs -o nfsvers=4.1 $mdsaddr:/ $nfsmp
+	mount -t nfs4
+	sudo echo 'hello pnfs' >$nfsmp/hello-pnfs.txt
+	ls -l $nfsmp/hello-pnfs.txt
+	cat $nfsmp/hello-pnfs.txt
+	#---------------------------------------------------------------
 	EOF
 fi
