@@ -121,7 +121,7 @@ else
 	sudo mkdir -p $nfsmp
 	sudo mount -t nfs -o nfsvers=4.1 $mdsaddr:/ $nfsmp
 	mount -t nfs4
-	sudo echo 'hello pnfs' >$nfsmp/hello-pnfs.txt
+	sudo bash -c "echo 'hello pnfs' >$nfsmp/hello-pnfs.txt"
 	ls -l $nfsmp/hello-pnfs.txt
 	cat $nfsmp/hello-pnfs.txt
 	#---------------------------------------------------------------
