@@ -93,6 +93,7 @@ vm cpto ${vm_client} pnfs-client.sh .
 vm exec -v ${vm_client} sh pnfs-client.sh
 
 #mount test from freebsd client
+echo "{INFO} test from ${vm_client}:"
 nfsmp=/mnt/nfsmp
 mdsaddr=$(vm if $vm_mds)
 vm exec -v ${vm_client} -- mkdir -p $nfsmp
@@ -110,7 +111,7 @@ vm exec -v ${vm_mds} -- pnfsdsfile $expdir/testfile
 if [[ $(id -u) = 0 ]]; then
 	cat <<-EOF
 
-	# test from linux host:
+	{INFO} test from linux host
 	EOF
 	run mkdir -p $nfsmp
 	run mount -t nfs -o nfsvers=4.1 freebsd-pnfs-mds:/ $nfsmp
