@@ -8,7 +8,7 @@ In order to run this script correctly, you need a PC or laptop with 16G RAM, and
 You also need to install tmux and [kiss-vm-ns](https://github.com/tcler/kiss-vm-ns) in advance:
 ```
 sudo yum install -y tmux
-git clone https://github.com/tcler/kiss-vm-ns && sudo make -C kiss-vm-ns && sudo vm --prepare"
+git clone https://github.com/tcler/kiss-vm-ns && sudo make -C kiss-vm-ns && sudo vm --prepare
 ```
 
 # quick start
