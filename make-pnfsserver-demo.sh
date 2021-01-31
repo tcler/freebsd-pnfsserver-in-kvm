@@ -53,30 +53,29 @@ if [[ $imagef = *.xz ]]; then
 	fi
 fi
 
-echo "{INFO} remove existed VMs ..."
+echo -e "\n{INFO} remove existed VMs ..."
 vm del freebsd-pnfs-ds1 freebsd-pnfs-ds2 freebsd-pnfs-mds freebsd-pnfs-client
 
-echo
-echo "{INFO} creating VMs ..."
+echo -e "\n{INFO} creating VMs ..."
 tmux new -d "/usr/bin/vm $freebsd_nvr -n $vm_ds1 -i $imagef -f"
 tmux new -d "/usr/bin/vm $freebsd_nvr -n $vm_ds2 -i $imagef -f"
 tmux new -d "/usr/bin/vm $freebsd_nvr -n $vm_mds -i $imagef -f"
 tmux new -d "/usr/bin/vm $freebsd_nvr -n $vm_client -i $imagef -f"
 
 port_available() { nc $1 $2 </dev/null &>/dev/null; }
-echo "{INFO} waiting VMs install finish ..."
+echo -e "\n{INFO} waiting VMs install finish ..."
 
 #config freebsd pnfs ds server
 for dsserver in $vm_ds1 $vm_ds2; do
 	until port_available ${dsserver} 22; do sleep 2; done
-	echo "{INFO} setup ${dsserver}:"
+	echo -e "\n{INFO} setup ${dsserver}:"
 	vm cpto ${dsserver} pnfs-ds.sh .
 	vm exec -v ${dsserver} sh pnfs-ds.sh
 	vm exec -v ${dsserver} -- showmount -e localhost
 done
 
 #config freebsd pnfs mds server
-echo "{INFO} setup ${vm_mds}:"
+echo -e "\n{INFO} setup ${vm_mds}:"
 ds1addr=$(vm if $vm_ds1)
 ds2addr=$(vm if $vm_ds2)
 expdir=/export
@@ -87,13 +86,13 @@ vm exec -v ${vm_mds} -- mount -t nfs
 vm exec -v ${vm_mds} -- showmount -e localhost
 
 #config freebsd pnfs client
-echo "{INFO} setup ${vm_client}:"
+echo -e "\n{INFO} setup ${vm_client}:"
 until port_available ${vm_client} 22; do sleep 2; done
 vm cpto ${vm_client} pnfs-client.sh .
 vm exec -v ${vm_client} sh pnfs-client.sh
 
 #mount test from freebsd client
-echo "{INFO} test from ${vm_client}:"
+echo -e "\n{INFO} test from ${vm_client}:"
 nfsmp=/mnt/nfsmp
 mdsaddr=$(vm if $vm_mds)
 vm exec -v ${vm_client} -- mkdir -p $nfsmp
