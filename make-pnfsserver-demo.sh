@@ -31,6 +31,9 @@ run() {
 #create freebsd VMs
 #-------------------------------------------------------------------------------
 freebsd_nvr="FreeBSD-12.2"
+nfs4minver=1
+freebsd_nvr="FreeBSD-13.0"
+nfs4minver=2
 vm_ds1=freebsd-pnfs-ds1
 vm_ds2=freebsd-pnfs-ds2
 vm_mds=freebsd-pnfs-mds
@@ -96,7 +99,7 @@ echo -e "\n{INFO} test from ${vm_client}:"
 nfsmp=/mnt/nfsmp
 mdsaddr=$(vm if $vm_mds)
 vm exec -v ${vm_client} -- mkdir -p $nfsmp
-vm exec -v ${vm_client} -- mount -t nfs -o nfsv4,minorversion=1,pnfs $mdsaddr:/ $nfsmp
+vm exec -v ${vm_client} -- mount -t nfs -o nfsv4,minorversion=$nfs4minver,pnfs $mdsaddr:/ $nfsmp
 vm exec -v ${vm_client} -- mount -t nfs
 vm exec -v ${vm_client} -- sh -c "'echo 0123456789abcdef >$nfsmp/testfile'"
 vm exec -v ${vm_client} -- ls -l $nfsmp/testfile
@@ -107,13 +110,15 @@ vm exec -v ${vm_mds} -- cat $expdir/testfile
 vm exec -v ${vm_mds} -- pnfsdsfile $expdir/testfile
 
 #mount test from linux host
+nfsver=4.1
+nfsver=4.2
 if [[ $(id -u) = 0 ]]; then
 	cat <<-EOF
 
 	{INFO} test from linux host
 	EOF
 	run mkdir -p $nfsmp
-	run mount -t nfs -o nfsvers=4.1 freebsd-pnfs-mds:/ $nfsmp
+	run mount -t nfs -o nfsvers=$nfsver freebsd-pnfs-mds:/ $nfsmp
 	run mount -t nfs4
 	run bash -c "echo 'hello pnfs' >$nfsmp/hello-pnfs.txt"
 	run ls -l $nfsmp/hello-pnfs.txt
@@ -125,7 +130,7 @@ else
 	#---------------------------------------------------------------
 	# you can do test from linux like:
 	sudo mkdir -p $nfsmp
-	sudo mount -t nfs -o nfsvers=4.1 $mdsaddr:/ $nfsmp
+	sudo mount -t nfs -o nfsvers=$nfsver $mdsaddr:/ $nfsmp
 	mount -t nfs4
 	sudo bash -c "echo 'hello pnfs' >$nfsmp/hello-pnfs.txt"
 	ls -l $nfsmp/hello-pnfs.txt

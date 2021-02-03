@@ -9,6 +9,9 @@ if [ -z "$ds_server0" ] || [ -z "$ds_server1" ]; then
 	exit 1
 fi
 
+nfs4minver=1
+nfs4minver=2
+
 mntds0=/data0
 mntds1=/data1
 
@@ -19,8 +22,8 @@ mkdir -p -m 700 $mntds0 $mntds1
 mkdir -p $expdir $expdir0 $expdir1
 
 cat <<EOF >>/etc/fstab
-$ds_server0:/  $mntds0 nfs rw,vers=4,minorversion=1,soft,retrans=2 0 0
-$ds_server1:/  $mntds1 nfs rw,vers=4,minorversion=1,soft,retrans=2 0 0
+$ds_server0:/  $mntds0 nfs rw,vers=4,minorversion=$nfs4minver,soft,retrans=2 0 0
+$ds_server1:/  $mntds1 nfs rw,vers=4,minorversion=$nfs4minver,soft,retrans=2 0 0
 EOF
 mount -vvv $mntds0 || exit 1
 mount -vvv $mntds1 || exit 1
