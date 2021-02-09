@@ -29,8 +29,11 @@ mount -vvv $mntds0 || exit 1
 mount -vvv $mntds1 || exit 1
 
 cat <<EOF >/etc/exports
-$expdir -maproot=root -sec=sys
-V4: $expdir -sec=sys
+#$expdir -maproot=root -sec=sys
+#V4: $expdir -sec=sys
+$expdir0 -maproot=root -sec=sys
+$expdir1 -maproot=root -sec=sys
+V4: / -sec=sys
 EOF
 
 echo 'vfs.nfsd.default_flexfile=1' >>/etc/sysctl.conf
@@ -45,6 +48,7 @@ nfsv4_server_enable="YES"
 nfsuserd_enable="YES"
 
 nfs_server_flags="-u -t -n 32 -m 2 -p $ds_server0:$mntds0,$ds_server1:$mntds1"
+nfs_server_flags="-u -t -n 32 -m 2 -p $ds_server0:$mntds0#$expdir0,$ds_server1:$mntds1#$expdir1"
 mountd_flags="-S"
 nfsuserd_flags="-manage-gids"
 EOF

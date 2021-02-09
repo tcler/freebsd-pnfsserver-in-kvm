@@ -81,10 +81,9 @@ done
 echo -e "\n{INFO} setup ${vm_mds}:"
 ds1addr=$(vm if $vm_ds1)
 ds2addr=$(vm if $vm_ds2)
-expdir=/export
 until port_available ${vm_mds} 22; do sleep 2; done
 vm cpto ${vm_mds} pnfs-mds.sh .
-vm exec -v ${vm_mds} sh pnfs-mds.sh $ds1addr $ds2addr $expdir
+vm exec -v ${vm_mds} sh pnfs-mds.sh $ds1addr $ds2addr
 vm exec -v ${vm_mds} -- mount -t nfs
 vm exec -v ${vm_mds} -- showmount -e localhost
 
@@ -95,19 +94,32 @@ vm cpto ${vm_client} pnfs-client.sh .
 vm exec -v ${vm_client} sh pnfs-client.sh
 
 #mount test from freebsd client
+expdir0=/export0
+expdir1=/export1
 echo -e "\n{INFO} test from ${vm_client}:"
 nfsmp=/mnt/nfsmp
+nfsmp2=/mnt/nfsmp2
 mdsaddr=$(vm if $vm_mds)
-vm exec -v ${vm_client} -- mkdir -p $nfsmp
-vm exec -v ${vm_client} -- mount -t nfs -o nfsv4,minorversion=$nfs4minver,pnfs $mdsaddr:/ $nfsmp
+vm exec -v ${vm_client} -- mkdir -p $nfsmp $nfsmp2
+vm exec -v ${vm_client} -- mount -t nfs -o nfsv4,minorversion=$nfs4minver,pnfs $mdsaddr:$expdir0 $nfsmp
+vm exec -v ${vm_client} -- mount -t nfs -o nfsv4,minorversion=$nfs4minver,pnfs $mdsaddr:$expdir1 $nfsmp2
 vm exec -v ${vm_client} -- mount -t nfs
 vm exec -v ${vm_client} -- sh -c "'echo 0123456789abcdef >$nfsmp/testfile'"
+vm exec -v ${vm_client} -- sh -c "'echo 0123456789abcdef >$nfsmp2/testfile'"
+
 vm exec -v ${vm_client} -- ls -l $nfsmp/testfile
 vm exec -v ${vm_client} -- cat $nfsmp/testfile
 
-vm exec -v ${vm_mds} -- ls -l $expdir/testfile
-vm exec -v ${vm_mds} -- cat $expdir/testfile
-vm exec -v ${vm_mds} -- pnfsdsfile $expdir/testfile
+vm exec -v ${vm_client} -- ls -l $nfsmp2/testfile
+vm exec -v ${vm_client} -- cat $nfsmp2/testfile
+
+vm exec -v ${vm_mds} -- ls -l $expdir0/testfile
+vm exec -v ${vm_mds} -- cat $expdir0/testfile
+vm exec -v ${vm_mds} -- pnfsdsfile $expdir0/testfile
+
+vm exec -v ${vm_mds} -- ls -l $expdir1/testfile
+vm exec -v ${vm_mds} -- cat $expdir1/testfile
+vm exec -v ${vm_mds} -- pnfsdsfile $expdir1/testfile
 
 #mount test from linux host
 nfsver=4.1
@@ -118,7 +130,7 @@ if [[ $(id -u) = 0 ]]; then
 	{INFO} test from linux host
 	EOF
 	run mkdir -p $nfsmp
-	run mount -t nfs -o nfsvers=$nfsver freebsd-pnfs-mds:/ $nfsmp
+	run mount -t nfs -o nfsvers=$nfsver freebsd-pnfs-mds:/$expdir0 $nfsmp
 	run mount -t nfs4
 	run bash -c "echo 'hello pnfs' >$nfsmp/hello-pnfs.txt"
 	run ls -l $nfsmp/hello-pnfs.txt
@@ -130,7 +142,7 @@ else
 	#---------------------------------------------------------------
 	# you can do test from linux like:
 	sudo mkdir -p $nfsmp
-	sudo mount -t nfs -o nfsvers=$nfsver $mdsaddr:/ $nfsmp
+	sudo mount -t nfs -o nfsvers=$nfsver $mdsaddr:/$expdir0 $nfsmp
 	mount -t nfs4
 	sudo bash -c "echo 'hello pnfs' >$nfsmp/hello-pnfs.txt"
 	ls -l $nfsmp/hello-pnfs.txt
