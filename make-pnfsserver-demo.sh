@@ -143,7 +143,7 @@ if [[ $(id -u) = 0 ]]; then
 	{INFO} test from linux host
 	EOF
 	run mkdir -p $nfsmp
-	run mount -t nfs -o nfsvers=$nfsver freebsd-pnfs-mds:/$expdir0 $nfsmp
+	run mount -t nfs -o nfsvers=$nfsver $mdsaddr:$expdir0 $nfsmp
 	run mount -t nfs4
 	run bash -c "echo 'hello pnfs' >$nfsmp/hello-pnfs.txt"
 	run ls -l $nfsmp/hello-pnfs.txt
@@ -155,7 +155,7 @@ else
 	#---------------------------------------------------------------
 	# you can do test from linux like:
 	sudo mkdir -p $nfsmp
-	sudo mount -t nfs -o nfsvers=$nfsver $mdsaddr:/$expdir0 $nfsmp
+	sudo mount -t nfs -o nfsvers=$nfsver $mdsaddr:$expdir0 $nfsmp
 	mount -t nfs4
 	sudo bash -c "echo 'hello pnfs' >$nfsmp/hello-pnfs.txt"
 	ls -l $nfsmp/hello-pnfs.txt
