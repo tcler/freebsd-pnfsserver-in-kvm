@@ -25,6 +25,21 @@ run() {
 	echo "[run]" "$@"
 	"$@"
 }
+get_if_addr() {
+	local _vm=$1
+	local _pub=$2
+	if [[ -z "$pub" ]]; then
+		vm if $_vm
+	else
+		vm exec $_vm -- ifconfig vtnet1 | awk '$1=="inet" {print $2}'
+	fi
+}
+
+pub=$1
+if [[ -n "$pub" ]]; then
+	echo -e "{INFO} creating macvlan if mv-host-pub ..."
+	sudo netns host,mv-host-pub,dhcp
+fi
 
 #create freebsd VMs
 #-------------------------------------------------------------------------------
@@ -77,8 +92,8 @@ done
 
 #config freebsd pnfs mds server
 echo -e "\n{INFO} setup ${vm_mds}:"
-ds1addr=$(vm if $vm_ds1)
-ds2addr=$(vm if $vm_ds2)
+ds1addr=$(get_if_addr $vm_ds1 $pub)
+ds2addr=$(get_if_addr $vm_ds2 $pub)
 until port_available ${vm_mds} 22; do sleep 2; done
 vm cpto ${vm_mds} pnfs-mds.sh .
 vm exec -v ${vm_mds} sh pnfs-mds.sh $ds1addr $ds2addr
@@ -97,7 +112,7 @@ expdir1=/export1
 echo -e "\n{INFO} test from ${vm_client}:"
 nfsmp=/mnt/nfsmp
 nfsmp2=/mnt/nfsmp2
-mdsaddr=$(vm if $vm_mds)
+mdsaddr=$(get_if_addr $vm_mds $pub)
 vm exec -v ${vm_client} -- mkdir -p $nfsmp $nfsmp2
 vm exec -v ${vm_client} -- mount -t nfs -o nfsv4,minorversion=$nfs4minver,pnfs $mdsaddr:$expdir0 $nfsmp
 vm exec -v ${vm_client} -- mount -t nfs -o nfsv4,minorversion=$nfs4minver,pnfs $mdsaddr:$expdir1 $nfsmp2
