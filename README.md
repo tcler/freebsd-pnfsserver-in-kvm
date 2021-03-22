@@ -15,7 +15,7 @@ git clone https://github.com/tcler/kiss-vm-ns && sudo make -C kiss-vm-ns && sudo
 ```
 git clone https://github.com/tcler/freebsd-pnfsserver-in-kvm
 cd freebsd-pnfsserver-in-kvm
-time ./make-pnfsserver-demo.sh
+time ./make-pnfsserver-demo.sh [pub]
 
 vm ls
 vm login freebsd-pnfs-mds     #and do more tests and observations
