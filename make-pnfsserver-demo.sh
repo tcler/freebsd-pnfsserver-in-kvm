@@ -11,7 +11,7 @@ if ! which vm; then
 		sleep 5
 		echo -e "{warn} installing kiss-vm  fail, try again ..."
 	done
-	vm --prepare >/dev/null
+	vm prepare >/dev/null
 fi
 
 Cleanup() {
