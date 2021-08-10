@@ -73,10 +73,10 @@ echo -e "\n{INFO} remove existed VMs ..."
 vm del freebsd-pnfs-ds1 freebsd-pnfs-ds2 freebsd-pnfs-mds freebsd-pnfs-client
 
 echo -e "\n{INFO} creating VMs ..."
-tmux new -d "/usr/bin/vm $freebsd_nvr -n $vm_ds1 -i $imagef -f"
-tmux new -d "/usr/bin/vm $freebsd_nvr -n $vm_ds2 -i $imagef -f"
-tmux new -d "/usr/bin/vm $freebsd_nvr -n $vm_mds -i $imagef -f"
-tmux new -d "/usr/bin/vm $freebsd_nvr -n $vm_client -i $imagef -f"
+tmux new -d "/usr/bin/vm create $freebsd_nvr -n $vm_ds1 -dsize 80 -i $imagef -f"
+tmux new -d "/usr/bin/vm create $freebsd_nvr -n $vm_ds2 -dsize 80 -i $imagef -f"
+tmux new -d "/usr/bin/vm create $freebsd_nvr -n $vm_mds -dsize 40 -i $imagef -f"
+tmux new -d "/usr/bin/vm create $freebsd_nvr -n $vm_client -i $imagef -f"
 
 port_available() { nc $1 $2 </dev/null &>/dev/null; }
 echo -e "\n{INFO} waiting VMs install finish ..."
