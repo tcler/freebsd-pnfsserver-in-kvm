@@ -117,8 +117,8 @@ vm exec -v ${vm_client} -- mkdir -p $nfsmp $nfsmp2
 vm exec -v ${vm_client} -- mount -t nfs -o nfsv4,minorversion=$nfs4minver,pnfs $mdsaddr:$expdir0 $nfsmp
 vm exec -v ${vm_client} -- mount -t nfs -o nfsv4,minorversion=$nfs4minver,pnfs $mdsaddr:$expdir1 $nfsmp2
 vm exec -v ${vm_client} -- mount -t nfs
-vm exec -v ${vm_client} -- sh -c "'echo 0123456789abcdef >$nfsmp/testfile'"
-vm exec -v ${vm_client} -- sh -c "'echo 0123456789abcdef >$nfsmp2/testfile'"
+vm exec -v ${vm_client} -- sh -c "echo 0123456789abcdef >$nfsmp/testfile"
+vm exec -v ${vm_client} -- sh -c "echo 0123456789abcdef >$nfsmp2/testfile"
 
 vm exec -v ${vm_client} -- ls -l $nfsmp/testfile
 vm exec -v ${vm_client} -- cat $nfsmp/testfile
