@@ -53,7 +53,7 @@ vm_mds=freebsd-pnfs-mds
 vm_client=freebsd-pnfs-client
 
 stdlogf=/tmp/std-$$.log
-vm --downloadonly $freebsd_nvr 2>&1 | tee $stdlogf
+vm create --downloadonly $freebsd_nvr 2>&1 | tee $stdlogf
 imagef=$(sed -n '${s/^.* //; p}' $stdlogf)
 if [[ ! -f "$imagef" ]]; then
 	echo "{WARN} seems cloud image file download fail." >&2
