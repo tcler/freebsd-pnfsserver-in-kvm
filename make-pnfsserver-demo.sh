@@ -43,9 +43,9 @@ fi
 
 #create freebsd VMs
 #-------------------------------------------------------------------------------
-freebsd_nvr="FreeBSD-12.3"
+freebsd_nvr="FreeBSD-12.4"
 nfs4minver=1
-freebsd_nvr="FreeBSD-13.1"
+freebsd_nvr="FreeBSD-13.3"
 nfs4minver=2
 vm_ds1=freebsd-pnfs-ds1
 vm_ds2=freebsd-pnfs-ds2
