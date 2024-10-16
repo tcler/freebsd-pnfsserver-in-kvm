@@ -15,11 +15,13 @@ git clone https://github.com/tcler/kiss-vm-ns && sudo make -C kiss-vm-ns && sudo
 ```
 git clone https://github.com/tcler/freebsd-pnfsserver-in-kvm
 cd freebsd-pnfsserver-in-kvm
-time ./make-freebsd-pnfsserver.sh
+time ./make-freebsd-pnfsserver.sh [8|9|10|kiss-vm distro name] [vm-create options]
+                                  #^^^^^^ here 8,9,10 means rhel/centos-stream 8,9,10
 
 vm ls
-vm login freebsd-pnfs-mds     #and do more tests and observations
-vm login freebsd-pnfs-client  #and do more tests and observations
+vm login freebsd-pnfs-mds     #login freebsd pnfs-mds server and do more tests/observations
+vm login freebsd-pnfs-client  #login freebsd client and do more tests/observations
+vm login fbpnfs-linux-client  #login linux client and do more tests/observations
 ```
 
 # ref
