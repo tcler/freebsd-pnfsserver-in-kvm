@@ -67,9 +67,9 @@ echo -e "\n{INFO} waiting VMs install finish ..."
 
 #config freebsd pnfs ds server
 for dsserver in $vm_ds1 $vm_ds2; do
-	until port_available ${dsserver} 22; do sleep 2; done
+	until port_available ${dsserver} 22; do sleep 2; done; sleep 2
 	echo -e "\n{INFO} setup ${dsserver}:"
-	vm cpto ${dsserver} freebsd-pnfs-ds.sh .
+	vm cpto -v ${dsserver} freebsd-pnfs-ds.sh .
 	vm exec -v ${dsserver} sh freebsd-pnfs-ds.sh
 	vm exec -v ${dsserver} -- showmount -e localhost
 done
@@ -78,16 +78,16 @@ done
 echo -e "\n{INFO} setup ${vm_mds}:"
 ds1addr=$(vm ifaddr $vm_ds1)
 ds2addr=$(vm ifaddr $vm_ds2)
-until port_available ${vm_mds} 22; do sleep 2; done
-vm cpto ${vm_mds} freebsd-pnfs-mds.sh .
+until port_available ${vm_mds} 22; do sleep 2; done; sleep 2
+vm cpto -v ${vm_mds} freebsd-pnfs-mds.sh .
 vm exec -v ${vm_mds} sh freebsd-pnfs-mds.sh $ds1addr $ds2addr
 vm exec -v ${vm_mds} -- mount -t nfs
 vm exec -v ${vm_mds} -- showmount -e localhost
 
 #config freebsd pnfs client
 echo -e "\n{INFO} setup ${vm_fbclient}:"
-until port_available ${vm_fbclient} 22; do sleep 2; done
-vm cpto ${vm_fbclient} freebsd-pnfs-client.sh .
+until port_available ${vm_fbclient} 22; do sleep 2; done; sleep 2
+vm cpto -v ${vm_fbclient} freebsd-pnfs-client.sh .
 vm exec -v ${vm_fbclient} sh freebsd-pnfs-client.sh
 
 #mount test from freebsd client
@@ -121,7 +121,7 @@ vm exec -v ${vm_mds} -- pnfsdsfile $expdir1/testfile
 #mount test from linux Guest
 nfsver=4.1
 nfsver=4.2
-until port_available ${vm_rhel} 22; do sleep 2; done
+until port_available ${vm_rhel} 22; do sleep 2; done; sleep 2
 echo -e "\n{INFO} test from ${vm_rhel}:"
 vm exec -vx $vm_rhel -- showmount -e $mdsaddr
 vm exec -vx $vm_rhel -- mkdir -p $nfsmp
