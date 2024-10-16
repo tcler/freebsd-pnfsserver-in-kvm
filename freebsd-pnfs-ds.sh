@@ -1,5 +1,7 @@
 #!/bin/sh
 
+grep -q =FreeBSD /etc/os-release || { echo "{WARN} this script is only for FreeBSD OS"; exit 1; }
+
 topdir="/pnfs-ds-storage"
 mkdir -p -m 700 $topdir
 (cd $topdir; jot -w ds 20 0 | xargs mkdir -p -m 700)

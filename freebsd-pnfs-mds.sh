@@ -1,5 +1,7 @@
 #!/bin/sh
 
+grep -q =FreeBSD /etc/os-release || { echo "{WARN} this script is only for FreeBSD OS"; exit 1; }
+
 ds_server0=$1
 ds_server1=$2
 expdir=${3:-/export}
