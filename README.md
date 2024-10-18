@@ -2,7 +2,8 @@
 Here we provide a script to automatically create a freebsd pnfs-server VMs cluster
 
 # platform requires
-In order to run this script correctly, you need a PC or laptop with 16G RAM, and the OS shoud be CentOS-7/RHEL-7/Fedora-30 or higher
+In order to run this script correctly, you need a PC or laptop with 16G RAM, and the OS shoud be CentOS/RHEL-7,Fedora-30 or higher.
+[Update] Now(October 2024) recommand RHEL/Rocky/AlmaLinux-9,Fedora-40 or higher
 
 # software requires
 You also need to install tmux and [kiss-vm-ns](https://github.com/tcler/kiss-vm-ns) in advance:
