@@ -57,18 +57,17 @@ echo -e "\n{INFO} remove existed VMs ..."
 vm del freebsd-pnfs-ds1 freebsd-pnfs-ds2 freebsd-pnfs-mds freebsd-pnfs-client
 
 echo -e "\n{INFO} creating VMs ..."
-trun -tmux /usr/bin/vm create $distro -n $clientvm -p $pkgs --nointeract --saveimage -f "${@}"
-trun -tmux /usr/bin/vm create $freebsd_nvr -n $vm_ds1 -dsize 80 -i $imagef -f
-trun -tmux /usr/bin/vm create $freebsd_nvr -n $vm_ds2 -dsize 80 -i $imagef -f
-trun -tmux /usr/bin/vm create $freebsd_nvr -n $vm_mds -dsize 40 -i $imagef -f
+trun -tmux /usr/bin/vm create $distro -n $clientvm -p $pkgs --saveimage -f --nointeract "${@}"
+trun -tmux /usr/bin/vm create $freebsd_nvr -n $vm_ds1 -dsize 80 -i $imagef -f --nointeract
+trun -tmux /usr/bin/vm create $freebsd_nvr -n $vm_ds2 -dsize 80 -i $imagef -f --nointeract
+trun -tmux /usr/bin/vm create $freebsd_nvr -n $vm_mds -dsize 40 -i $imagef -f --nointeract
 trun       /usr/bin/vm create $freebsd_nvr -n $vm_fbclient -i $imagef -f --nointeract
 
-port_available() { nc $1 $2 </dev/null &>/dev/null; }
 echo -e "\n{INFO} waiting VMs install finish ..."
 
 #config freebsd pnfs ds server
 for dsserver in $vm_ds1 $vm_ds2; do
-	until port_available ${dsserver} 22; do sleep 2; done; sleep 2
+	vm port-available -w ${dsserver}
 	echo -e "\n{INFO} setup ${dsserver}:"
 	cpfile=freebsd-pnfs-ds.sh; [[ -f "$cpfile" ]] || cpfile=/usr/bin/$cpfile
 	vm cpto    ${dsserver} $cpfile /usr/bin
@@ -80,7 +79,7 @@ done
 echo -e "\n{INFO} setup ${vm_mds}:"
 ds1addr=$(vm ifaddr $vm_ds1|head -1)
 ds2addr=$(vm ifaddr $vm_ds2|head -1)
-until port_available ${vm_mds} 22; do sleep 2; done; sleep 2
+vm port-available -w ${vm_mds}
 cpfile=freebsd-pnfs-mds.sh; [[ -f "$cpfile" ]] || cpfile=/usr/bin/$cpfile
 vm cpto    ${vm_mds} $cpfile /usr/bin
 vm exec -v ${vm_mds} $cpfile $ds1addr $ds2addr
@@ -89,7 +88,7 @@ vm exec -v ${vm_mds} -- showmount -e localhost
 
 #config freebsd pnfs client
 echo -e "\n{INFO} setup ${vm_fbclient}:"
-until port_available ${vm_fbclient} 22; do sleep 2; done; sleep 2
+vm port-available -w ${vm_fbclient}
 cpfile=freebsd-pnfs-client.sh; [[ -f "$cpfile" ]] || cpfile=/usr/bin/$cpfile
 vm cpto    ${vm_fbclient} $cpfile /usr/bin
 vm exec -v ${vm_fbclient} ${cpfile}
@@ -125,8 +124,11 @@ vm exec -v ${vm_mds} -- pnfsdsfile $expdir1/testfile
 #mount test from linux Guest
 nfsver=4.1
 nfsver=4.2
-until port_available ${clientvm} 22; do sleep 2; done; sleep 2
-echo -e "\n{INFO} test from ${clientvm}:"
+echo
+vm port-available -w ${clientvm}
+echo -e "{INFO} waiting vm ${clientvm} create process finished ..."
+while ps axf|grep -q tmux.new.*$$-$USER.*-d./usr/bin/vm.creat[e].*-n.${clientvm}; do sleep 16; done
+echo -e "{INFO} test from ${clientvm}:"
 vm exec -vx $clientvm -- showmount -e $mdsaddr
 vm exec -vx $clientvm -- mkdir -p $nfsmp
 vm exec -vx $clientvm -- mount -t nfs -o nfsvers=$nfsver $mdsaddr:$expdir0 $nfsmp
