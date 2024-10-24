@@ -78,8 +78,8 @@ done
 
 #config freebsd pnfs mds server
 echo -e "\n{INFO} setup ${vm_mds}:"
-ds1addr=$(vm ifaddr $vm_ds1)
-ds2addr=$(vm ifaddr $vm_ds2)
+ds1addr=$(vm ifaddr $vm_ds1|head -1)
+ds2addr=$(vm ifaddr $vm_ds2|head -1)
 until port_available ${vm_mds} 22; do sleep 2; done; sleep 2
 cpfile=freebsd-pnfs-mds.sh; [[ -f "$cpfile" ]] || cpfile=/usr/bin/$cpfile
 vm cpto    ${vm_mds} $cpfile /usr/bin
@@ -100,7 +100,7 @@ expdir1=/export1
 echo -e "\n{INFO} test from ${vm_fbclient}:"
 nfsmp=/mnt/nfsmp
 nfsmp2=/mnt/nfsmp2
-mdsaddr=$(vm ifaddr $vm_mds)
+mdsaddr=$(vm ifaddr $vm_mds|head -1)
 vm exec -v ${vm_fbclient} -- mkdir -p $nfsmp $nfsmp2
 vm exec -v ${vm_fbclient} -- mount -t nfs -o nfsv4,minorversion=$nfs4minver,pnfs $mdsaddr:$expdir0 $nfsmp
 vm exec -v ${vm_fbclient} -- mount -t nfs -o nfsv4,minorversion=$nfs4minver,pnfs $mdsaddr:$expdir1 $nfsmp2
