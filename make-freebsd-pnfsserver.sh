@@ -18,8 +18,10 @@ Cleanup() {
 }
 trap Cleanup EXIT #SIGINT SIGQUIT SIGTERM
 
-[[ $1 != -* ]] && { distro="$1"; shift; }
+[[ $# -ge 1 && $1 != -* ]] && { distro=${1:-9}; shift;
+	[[ $# -ge 1 && $1 != -* ]] && { clientvm=${1:-ontap-rhel-client}; shift; }; }
 distro=${distro:-9}
+clientvm=${clientvm:-fbpnfs-linux-client}
 
 #create freebsd VMs
 #-------------------------------------------------------------------------------
@@ -32,7 +34,6 @@ vm_ds2=freebsd-pnfs-ds2
 vm_mds=freebsd-pnfs-mds
 vm_fbclient=freebsd-pnfs-client
 
-vm_linux=${vm_linux:-fbpnfs-linux-client}
 pkgs=nfs-utils,expect,iproute-tc,kernel-modules-extra,vim,bind-utils,tcpdump
 
 stdlogf=/tmp/std-$$.log
@@ -56,7 +57,7 @@ echo -e "\n{INFO} remove existed VMs ..."
 vm del freebsd-pnfs-ds1 freebsd-pnfs-ds2 freebsd-pnfs-mds freebsd-pnfs-client
 
 echo -e "\n{INFO} creating VMs ..."
-trun -tmux /usr/bin/vm create $distro -n $vm_linux -p $pkgs --nointeract --saveimage -f "${@}"
+trun -tmux /usr/bin/vm create $distro -n $clientvm -p $pkgs --nointeract --saveimage -f "${@}"
 trun -tmux /usr/bin/vm create $freebsd_nvr -n $vm_ds1 -dsize 80 -i $imagef -f
 trun -tmux /usr/bin/vm create $freebsd_nvr -n $vm_ds2 -dsize 80 -i $imagef -f
 trun -tmux /usr/bin/vm create $freebsd_nvr -n $vm_mds -dsize 40 -i $imagef -f
@@ -124,14 +125,14 @@ vm exec -v ${vm_mds} -- pnfsdsfile $expdir1/testfile
 #mount test from linux Guest
 nfsver=4.1
 nfsver=4.2
-until port_available ${vm_linux} 22; do sleep 2; done; sleep 2
-echo -e "\n{INFO} test from ${vm_linux}:"
-vm exec -vx $vm_linux -- showmount -e $mdsaddr
-vm exec -vx $vm_linux -- mkdir -p $nfsmp
-vm exec -vx $vm_linux -- mount -t nfs -o nfsvers=$nfsver $mdsaddr:$expdir0 $nfsmp
-vm exec -vx $vm_linux -- mount -t nfs4
-vm exec -vx $vm_linux -- bash -c "echo 'hello pnfs' >$nfsmp/hello-pnfs.txt"
-vm exec -vx $vm_linux -- ls -l $nfsmp
-vm exec -vx $vm_linux -- cat $nfsmp/hello-pnfs.txt
-vm exec -vx $vm_linux -- cat $nfsmp/testfile
-vm exec -vx $vm_linux -- umount $nfsmp
+until port_available ${clientvm} 22; do sleep 2; done; sleep 2
+echo -e "\n{INFO} test from ${clientvm}:"
+vm exec -vx $clientvm -- showmount -e $mdsaddr
+vm exec -vx $clientvm -- mkdir -p $nfsmp
+vm exec -vx $clientvm -- mount -t nfs -o nfsvers=$nfsver $mdsaddr:$expdir0 $nfsmp
+vm exec -vx $clientvm -- mount -t nfs4
+vm exec -vx $clientvm -- bash -c "echo 'hello pnfs' >$nfsmp/hello-pnfs.txt"
+vm exec -vx $clientvm -- ls -l $nfsmp
+vm exec -vx $clientvm -- cat $nfsmp/hello-pnfs.txt
+vm exec -vx $clientvm -- cat $nfsmp/testfile
+vm exec -vx $clientvm -- umount $nfsmp
